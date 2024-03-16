@@ -27,10 +27,90 @@ size_t Size(void* ptr)
 	return ((size_t*)ptr)[-1];
 }
 
+void merge(int pData[], int l, int m, int r) {
+    int* L = Alloc(sizeof(int) * (m - l + 1));
+    int* R =  Alloc(sizeof(int) * (r - m));
+
+    for (int i = 0; i < m - l + 1; i++) {
+        L[i] = pData[l + i];
+    }
+
+    for (int i = 0; i < r - m; i++) {
+        R[i] = pData[m + 1 + i];
+    }
+
+    int i = 0, j = 0, k = l;
+    while (i < m - l + 1 && j < r - m) {
+        if (L[i] <= R[j]) {
+            pData[k] = L[i];
+            i++;
+        }
+        else {
+            pData[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < m - l + 1) {
+        pData[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < r - m) {
+        pData[k] = R[j];
+        j++;
+        k++;
+    }
+
+    DeAlloc(L);
+    DeAlloc(R);
+}
+
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void mergeSort(int pData[], int l, int r)
 {
+    if (l < r) {
+        int m = (l + r) / 2;
+
+        mergeSort(pData, l , m);
+        mergeSort(pData, m + 1 , r);
+        merge(pData, l, m, r);
+    }
+}
+
+
+// parses input file to an integer array
+int parseData(char *inputFileName, int **ppData)
+{
+	FILE* inFile = fopen(inputFileName,"r");
+	int dataSz = 0;
+	int i, n, *data;
+	*ppData = NULL;
+	
+	if (inFile)
+	{
+		fscanf(inFile,"%d\n",&dataSz);
+		*ppData = (int *)malloc(sizeof(int) * dataSz);
+		// Implement parse data block
+		if (*ppData == NULL)
+		{
+			printf("Cannot allocate memory\n");
+			exit(-1);
+		}
+		for (i=0;i<dataSz;++i)
+		{
+			fscanf(inFile, "%d ",&n);
+			data = *ppData + i;
+			*data = n;
+		}
+
+		fclose(inFile);
+	}
+	
+	return dataSz;
 }
 
 // parses input file to an integer array
